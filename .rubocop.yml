@@ -1,0 +1,9 @@
+AllCops:
+  NewCops: enable
+
+Lint/ShadowingOuterLocalVariable:
+  Enabled: false
+Metrics/AbcSize:
+  Enabled: false
+Metrics/MethodLength:
+  Enabled: false
