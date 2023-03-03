@@ -28,15 +28,21 @@ class Element
   def assign_attributes(element)
     element[:className] = attributes[:class_name] if attributes[:class_name]
     element[:id] = attributes[:id] if attributes[:id]
+    element[:type] = attributes[:type] if attributes[:type]
   end
 
   def register_events(element)
-    on_click = attributes[:on_click]
+    register_event(element, :click)
+    register_event(element, :input)
+  end
 
-    return unless on_click
+  def register_event(element, event_name)
+    event_handler = attributes["#{event_name}!".to_sym]
 
-    element.addEventListener('click') do |event|
-      on_click.call(event)
+    return unless event_handler
+
+    element.addEventListener(event_name.to_s) do |event|
+      event_handler.call(event)
     end
   end
 
@@ -59,8 +65,8 @@ end
 class TextElement < Element
   attr_reader :element_name
 
-  def initialize(text, on_click:)
-    super(on_click: on_click)
+  def initialize(text, **params)
+    super(**params)
     @text = text
     @element_name = 'text'
   end
@@ -81,7 +87,7 @@ class ComponentElement < Element
     @component.reset
     @component.render
 
-    super(on_click: nil, children: @component.element.children)
+    super(children: @component.element.children)
   end
 
   def render_to_html
@@ -131,6 +137,7 @@ class Component
     tbody
     tfoot
     button
+    input
   ].freeze
 
   attr_reader :engine, :parent_dom_id, :element
@@ -193,8 +200,8 @@ class Component
     end
   end
 
-  def text(text, on_click: nil)
-    create(TextElement.new(text, on_click: on_click))
+  def text(text, **attributes)
+    create(TextElement.new(text, **attributes))
   end
 
   # @param component [Component]

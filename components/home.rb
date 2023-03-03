@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # nodoc:
-class HomeComponent < Component
+class Home < Component
   def data
     {
       page: 'index'
@@ -20,11 +20,11 @@ class HomeComponent < Component
 
   def render
     div do
-      button class_name: 'm-1 p-2 bg-red-400', on_click: @set_page_index do
+      button class_name: 'm-1 p-2 bg-red-400', click!: @set_page_index do
         text('Go to index')
       end
 
-      button class_name: 'm-1 p-2 bg-red-400', on_click: @set_page_page2 do
+      button class_name: 'm-1 p-2 bg-red-400', click!: @set_page_page2 do
         text('Go to page2')
       end
 
@@ -38,9 +38,9 @@ class HomeComponent < Component
     puts page
     case page
     when 'index'
-      component(IndexComponent, text_param: 'Hello world')
+      component(Index, text_param: 'Hello world')
     when 'page2'
-      component(Page2Component)
+      component(Page2)
     end
   end
 end

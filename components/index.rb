@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # nodoc:
-class IndexComponent < Component
+class Index < Component
   def props
     [
       :text_param
@@ -23,8 +23,9 @@ class IndexComponent < Component
   end
 
   def render
-    h1 class_name: 'text-2xl mt-2', on_click: @click_handler do
+    h1 class_name: 'text-2xl mt-2', click!: @click_handler do
       text(h1_text)
     end
+    component InputField
   end
 end
