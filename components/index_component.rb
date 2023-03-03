@@ -10,7 +10,7 @@ class IndexComponent < Component
 
   def data
     {
-      text: 'Click me',
+      h1_text: 'Click me',
       click_index: 0
     }
   end
@@ -18,13 +18,13 @@ class IndexComponent < Component
   def setup
     @click_handler = lambda do |_ev|
       self.click_index += 1
-      self.text = "#{text_param} #{self.click_index}"
+      self.h1_text = "#{text_param} #{self.click_index}"
     end
   end
 
-  def render(ctx)
-    ctx.h1 class_name: 'text-2xl mt-2', on_click: @click_handler do |ctx|
-      ctx.text(text)
+  def render
+    h1 class_name: 'text-2xl mt-2', on_click: @click_handler do
+      text(h1_text)
     end
   end
 end

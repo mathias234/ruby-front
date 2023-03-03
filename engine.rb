@@ -7,7 +7,7 @@ class Element
   attr_accessor :attributes, :children
 
   def initialize(**attributes)
-    @children = attributes[:children]
+    @children = attributes[:children] || []
     @attributes = attributes
   end
 
@@ -57,9 +57,12 @@ end
 
 # nodoc:
 class TextElement < Element
+  attr_reader :element_name
+
   def initialize(text, on_click:)
     super(on_click: on_click)
     @text = text
+    @element_name = 'text'
   end
 
   def render_to_html
@@ -72,13 +75,13 @@ end
 # nodoc:
 class ComponentElement < Element
   # @param component [Component]
-  def initialize(engine, component, parent_dom_id)
+  def initialize(engine, component, _parent_dom_id)
     @component = component
     @engine = engine
-    ctx = Context.new(@engine, parent_dom_id: parent_dom_id)
-    @component.render(ctx)
+    @component.reset
+    @component.render
 
-    super(on_click: nil, children: ctx.elements)
+    super(on_click: nil, children: @component.element.children)
   end
 
   def render_to_html
@@ -93,81 +96,6 @@ class ComponentElement < Element
 
   def element_name
     @component.class.name
-  end
-end
-
-# nodoc:
-class Context
-  BASIC_ELEMENTS = %w[
-    h1
-    div
-    br
-    table
-    th
-    tr
-    td
-    caption
-    colgroup
-    col
-    thead
-    tbody
-    tfoot
-    button
-  ].freeze
-  attr_reader :elements, :engine, :parent_dom_id, :element_idx
-
-  def initialize(engine, parent_dom_id: '')
-    @parent_dom_id = parent_dom_id
-    @element_idx = 0
-    @elements = []
-    @engine = engine
-
-    create_basic_elements
-  end
-
-  def create_basic_elements
-    BASIC_ELEMENTS.each do |element_name|
-      define_singleton_method(element_name) do |**attributes, &block|
-        create(BasicElement.new(element_name, **attributes), block: block)
-      end
-    end
-  end
-
-  def text(text, on_click: nil)
-    create(TextElement.new(text, on_click: on_click))
-  end
-
-  # @param component [Component]
-  def component(component_class, **params)
-    dom_id = parent_dom_id + ".ComponentElement[#{component_class.name}][#{element_idx}]"
-
-    initialized_component = nil
-
-    if engine.components[dom_id].nil?
-      initialized_component = component_class.new(engine, params)
-      initialized_component.setup
-      engine.components[dom_id] = initialized_component
-    else
-      initialized_component = engine.components[dom_id]
-    end
-
-    element = ComponentElement.new(engine, initialized_component, parent_dom_id)
-    @elements << element
-    element
-  end
-
-  private
-
-  def create(element, block: nil)
-    ctx = Context.new(engine,
-                      parent_dom_id: "#{parent_dom_id}.#{element.class.name}[#{element.element_name}][#{element_idx}]")
-    @element_idx += 1
-
-    block&.call(ctx)
-    element.children = ctx.elements
-
-    @elements << element
-    element
   end
 end
 
@@ -188,10 +116,31 @@ end
 
 # nodoc:
 class Component
-  attr_reader :engine
+  BASIC_ELEMENTS = %w[
+    h1
+    div
+    br
+    table
+    th
+    tr
+    td
+    caption
+    colgroup
+    col
+    thead
+    tbody
+    tfoot
+    button
+  ].freeze
 
-  def initialize(engine, params)
+  attr_reader :engine, :parent_dom_id, :element
+
+  def initialize(engine, parent_dom_id, params)
     @engine = engine
+    @parent_dom_id = parent_dom_id
+    reset
+
+    create_basic_elements
 
     props.each do |prop|
       value = params[prop]
@@ -217,6 +166,11 @@ class Component
     end
   end
 
+  def reset
+    @element = BasicElement.new('div')
+    @element_idx = 0
+  end
+
   def props
     []
   end
@@ -230,26 +184,72 @@ class Component
   def render(_ctx)
     raise NotImplementedError
   end
+
+  def create_basic_elements
+    BASIC_ELEMENTS.each do |element_name|
+      define_singleton_method(element_name) do |**attributes, &block|
+        create(BasicElement.new(element_name, **attributes), block: block)
+      end
+    end
+  end
+
+  def text(text, on_click: nil)
+    create(TextElement.new(text, on_click: on_click))
+  end
+
+  # @param component [Component]
+  def component(component_class, **params)
+    dom_id = parent_dom_id + ".ComponentElement[#{component_class.name}][#{@element_idx}]"
+
+    initialized_component = engine.find_or_initialize_component(dom_id, component_class, **params)
+
+    create(ComponentElement.new(engine, initialized_component, parent_dom_id))
+  end
+
+  def create(element, block: nil)
+    @element_idx += 1
+
+    @element.children << element
+    last_element = @element
+    @element = element
+
+    last_element_idx = @element_idx
+    block&.call
+    @element_idx = last_element_idx
+
+    @element = last_element
+  end
 end
 
 # nodoc:
 class Engine
-  attr_accessor :components
-
   def initialize(start_component)
     @root_element = nil
     @start_component_class = start_component
     @components = {}
   end
 
+  def find_or_initialize_component(dom_id, component_class, **params)
+    if @components[dom_id].nil?
+      initialized_component = component_class.new(self, dom_id, params)
+      initialized_component.setup
+      @components[dom_id] = initialized_component
+    end
+
+    @components[dom_id]
+  end
+
   def render
     start_time = Time.now
     JS.global[:document][:body][:innerHTML] = 'Rendering...'
-    @ctx = Context.new(self, parent_dom_id: 'root')
-    @start_component = @ctx.component(@start_component_class)
+
+    initialized_component = find_or_initialize_component('root', @start_component_class)
+
+    start_component = ComponentElement.new(self, initialized_component, 'root')
+
     JS.global[:document][:body][:innerHTML] = ''
 
-    rendered = @start_component.render_to_html
+    rendered = start_component.render_to_html
 
     end_time = Time.now
 
@@ -258,8 +258,5 @@ class Engine
     )
 
     JS.global[:document][:body].appendChild(rendered)
-  rescue StandardError => e
-    puts e
-    puts e.backtrace
   end
 end

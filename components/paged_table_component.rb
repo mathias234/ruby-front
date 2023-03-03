@@ -10,7 +10,7 @@ class PagedTableComponent < Component
   end
 
   def data
-    pages = rows.each_slice(20).to_a
+    pages = rows.each_slice(2).to_a
 
     {
       pages: pages,
@@ -37,32 +37,32 @@ class PagedTableComponent < Component
     end
   end
 
-  def render(ctx)
-    ctx.table do |ctx|
-      ctx.tr do |ctx|
+  def render
+    table do
+      tr do
         headers.each do |header|
-          ctx.th do |ctx|
-            ctx.text header
+          th do
+            text header
           end
         end
       end
 
       current_rows.each do |row|
-        ctx.tr do |ctx|
+        tr do
           row.each do |col|
-            ctx.td do |ctx|
-              ctx.text col
+            td do
+              text col
             end
           end
         end
       end
 
-      ctx.button class_name: 'm-1 p-2 bg-red-400', on_click: @previous_page_handler do |ctx|
-        ctx.text 'Previous page'
+      button class_name: 'm-1 p-2 bg-red-400', on_click: @previous_page_handler do
+        text 'Previous page'
       end
 
-      ctx.button class_name: 'm-1 p-2 bg-red-400', on_click: @next_page_handler do |ctx|
-        ctx.text 'Next page'
+      button class_name: 'm-1 p-2 bg-red-400', on_click: @next_page_handler do
+        text 'Next page'
       end
     end
   end

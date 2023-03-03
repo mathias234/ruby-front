@@ -4,7 +4,7 @@
 class HomeComponent < Component
   def data
     {
-      page: 'page2'
+      page: 'index'
     }
   end
 
@@ -18,29 +18,29 @@ class HomeComponent < Component
     end
   end
 
-  def render(ctx)
-    ctx.div do |ctx|
-      ctx.button class_name: 'm-1 p-2 bg-red-400', on_click: @set_page_index do |ctx|
-        ctx.text('Go to index')
+  def render
+    div do
+      button class_name: 'm-1 p-2 bg-red-400', on_click: @set_page_index do
+        text('Go to index')
       end
 
-      ctx.button class_name: 'm-1 p-2 bg-red-400', on_click: @set_page_page2 do |ctx|
-        ctx.text('Go to page2')
+      button class_name: 'm-1 p-2 bg-red-400', on_click: @set_page_page2 do
+        text('Go to page2')
       end
 
-      render_page(ctx)
+      render_page
     end
   end
 
   private
 
-  def render_page(ctx)
+  def render_page
     puts page
     case page
     when 'index'
-      ctx.component(IndexComponent, text_param: 'Hello world')
+      component(IndexComponent, text_param: 'Hello world')
     when 'page2'
-      ctx.component(Page2Component)
+      component(Page2Component)
     end
   end
 end
