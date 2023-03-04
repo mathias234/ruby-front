@@ -34,6 +34,8 @@ class Element
     element.addEventListener('input') do |event|
       @component.send("#{attributes[:model]}=", event[:target][:value])
     end
+
+    element[:value] = @component.send("#{attributes[:model]}")
   end
 
   def assign_attributes(element)

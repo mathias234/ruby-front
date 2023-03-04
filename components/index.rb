@@ -19,7 +19,7 @@ class Index < Component
 
   def render
     h1 class_name: 'text-2xl', click!: @click_handler do
-      text(h1_text)
+      text h1_text
     end
     component InputField
   end
