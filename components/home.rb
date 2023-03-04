@@ -4,7 +4,7 @@
 class Home < Component
   def data
     {
-      page: 'index'
+      page: 'page2'
     }
   end
 

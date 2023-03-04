@@ -7,16 +7,17 @@ class Element
     @attributes = attributes
   end
 
-  def render_to_html
+  def render_to_html(full:)
     element = JS.global[:document].createElement(element_name)
 
     assign_attributes(element)
-
-    @children.each do |child_element|
-      element.appendChild(child_element.render_to_html)
-    end
-
     register_events(element)
+
+    if full
+      children.map do |child_element|
+        element.appendChild(child_element.render_to_html(full: true))
+      end
+    end
 
     element
   end
@@ -34,12 +35,20 @@ class Element
   end
 
   def register_event(element, event_name)
+    event_name = event_name.to_s
+
     event_handler = attributes["#{event_name}!".to_sym]
 
-    return unless event_handler
+    old_listners = element.getEventListeners(event_name)
 
-    element.addEventListener(event_name.to_s) do |event|
-      event_handler.call(event)
+    unless old_listners.eql?(JS::Undefined)
+      for i in 0...old_listners[:length].to_i
+        element.removeEventListener(event_name, element.getEventListeners(event_name)[i][:listener])
+      end
+    end
+
+    element.addEventListener(event_name) do |event|
+      event_handler&.call(event)
     end
   end
 
@@ -68,30 +77,32 @@ class TextElement < Element
     @element_name = 'text'
   end
 
-  def render_to_html
-    elem = JS.global[:document].createTextNode(@text)
-    register_events(elem)
-    elem
+  def render_to_html(full:)
+    JS.global[:document].createTextNode(@text)
   end
 end
 
 # nodoc:
 class ComponentElement < Element
   # @param component [Component]
-  def initialize(engine, component, _parent_dom_id)
+  def initialize(engine, component, root: false)
     @component = component
     @engine = engine
+    @root = root
+
     @component.reset
     @component.render
 
     super(children: @component.element.children)
   end
 
-  def render_to_html(body: false)
-    element = JS.global[:document].createElement(body ? 'body' : 'div')
+  def render_to_html(full:)
+    element = JS.global[:document].createElement(@root ? 'body' : 'div')
 
-    children.map do |child_element|
-      element.appendChild(child_element.render_to_html)
+    if full
+      children.map do |child_element|
+        element.appendChild(child_element.render_to_html(full: true))
+      end
     end
 
     element

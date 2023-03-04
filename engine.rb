@@ -107,7 +107,7 @@ class Component
 
     initialized_component = engine.find_or_initialize_component(dom_id, component_class, **params)
 
-    create(ComponentElement.new(engine, initialized_component, parent_dom_id))
+    create(ComponentElement.new(engine, initialized_component))
   end
 
   def create(element, block: nil)
@@ -146,19 +146,24 @@ class Engine
   def render
     initialized_component = find_or_initialize_component('root', @start_component_class)
 
-    start_component = ComponentElement.new(self, initialized_component, 'root')
+    start_component = ComponentElement.new(self, initialized_component, root: true)
 
-    rendered = start_component.render_to_html(body: true)
-    diff_and_update_html_dom(rendered, JS.global[:document][:body])
+    diff_and_update_html_dom(start_component, JS.global[:document][:body])
   end
 
-  def diff_and_update_html_dom(new_node, node)
+  def diff_and_update_html_dom(new_node_elem, node)
+    new_node = new_node_elem.render_to_html(full: false)
+
     if !node[:nodeType].strictly_eql?(new_node[:nodeType]) || !node[:nodeName].strictly_eql?(new_node[:nodeName])
-      node[:parentNode].replaceChild(new_node, node)
+      node[:parentNode].replaceChild(new_node_elem.render_to_html(full: true), node)
       return true
     end
 
     if node[:nodeType].to_i == 1 # ElementNode
+      # Update event registration
+      new_node_elem.register_events(node)
+
+      # Remove old attributes
       node_attrs = node[:attributes]
       for i in 0...node_attrs[:length].to_i
         attr = node_attrs[i]
@@ -167,29 +172,26 @@ class Engine
         node.removeAttribute(attr[:name])
       end
 
+      # Add new attributes
       for i in 0...new_node[:attributes][:length].to_i
         attr = new_node[:attributes].item(i)
         node.setAttribute(attr[:name], attr[:value])
       end
 
-      intial_count = new_node[:childNodes][:length]
-
-      idx = 0
-
-      for i in 0...new_node[:childNodes][:length].to_i
-        new_child_node = new_node[:childNodes][idx]
-        idx += 1
+      # Update children
+      for i in 0...new_node_elem.children.length
+        new_child_node = new_node_elem.children[i]
         child_node = node[:childNodes][i]
 
         if child_node.eql?(JS::Null)
-          node.appendChild(new_child_node)
-          idx -= 1
-        elsif diff_and_update_html_dom(new_child_node, child_node)
-          idx -= 1
+          node.appendChild(new_child_node.render_to_html(full: true))
+        else
+          diff_and_update_html_dom(new_child_node, child_node)
         end
       end
 
-      node.removeChild(node[:lastChild]) while node[:childNodes][:length].to_i > intial_count.to_i
+      # Remove excess children
+      node.removeChild(node[:lastChild]) while node[:childNodes][:length].to_i > new_node_elem.children.length
     elsif node[:nodeType].to_i == 3 # TextNode
       unless node[:textContent].strictly_eql?(new_node[:textContent])
         node[:parentNode].replaceChild(new_node, node)
