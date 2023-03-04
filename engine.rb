@@ -3,109 +3,6 @@
 require 'js'
 
 # nodoc:
-class Element
-  attr_accessor :attributes, :children
-
-  def initialize(**attributes)
-    @children = attributes[:children] || []
-    @attributes = attributes
-  end
-
-  def render_to_html
-    element = JS.global[:document].createElement(element_name)
-
-    assign_attributes(element)
-
-    @children.each do |child_element|
-      element.appendChild(child_element.render_to_html)
-    end
-
-    register_events(element)
-
-    element
-  end
-
-  def assign_attributes(element)
-    element[:className] = attributes[:class_name] if attributes[:class_name]
-    element[:id] = attributes[:id] if attributes[:id]
-    element[:type] = attributes[:type] if attributes[:type]
-  end
-
-  def register_events(element)
-    register_event(element, :click)
-    register_event(element, :input)
-  end
-
-  def register_event(element, event_name)
-    event_handler = attributes["#{event_name}!".to_sym]
-
-    return unless event_handler
-
-    element.addEventListener(event_name.to_s) do |event|
-      event_handler.call(event)
-    end
-  end
-
-  def element_name
-    ''
-  end
-end
-
-# nodoc:
-class BasicElement < Element
-  attr_reader :element_name
-
-  def initialize(element_name, **params)
-    super(**params)
-    @element_name = element_name
-  end
-end
-
-# nodoc:
-class TextElement < Element
-  attr_reader :element_name
-
-  def initialize(text, **params)
-    super(**params)
-    @text = text
-    @element_name = 'text'
-  end
-
-  def render_to_html
-    elem = JS.global[:document].createTextNode(@text)
-    register_events(elem)
-    elem
-  end
-end
-
-# nodoc:
-class ComponentElement < Element
-  # @param component [Component]
-  def initialize(engine, component, _parent_dom_id)
-    @component = component
-    @engine = engine
-    @component.reset
-    @component.render
-
-    super(children: @component.element.children)
-  end
-
-  def render_to_html
-    element = JS.global[:document].createElement('div')
-
-    children.map do |child_element|
-      element.appendChild(child_element.render_to_html)
-    end
-
-    element
-  end
-
-  def element_name
-    @component.class.name
-  end
-end
-
-# nodoc:
 class ChangeListener
   def initialize(value, change_callback)
     @value = value
@@ -247,23 +144,59 @@ class Engine
   end
 
   def render
-    start_time = Time.now
-    JS.global[:document][:body][:innerHTML] = 'Rendering...'
-
     initialized_component = find_or_initialize_component('root', @start_component_class)
 
     start_component = ComponentElement.new(self, initialized_component, 'root')
 
-    JS.global[:document][:body][:innerHTML] = ''
+    rendered = start_component.render_to_html(body: true)
+    diff_and_update_html_dom(rendered, JS.global[:document][:body])
+  end
 
-    rendered = start_component.render_to_html
+  def diff_and_update_html_dom(new_node, node)
+    if !node[:nodeType].strictly_eql?(new_node[:nodeType]) || !node[:nodeName].strictly_eql?(new_node[:nodeName])
+      node[:parentNode].replaceChild(new_node, node)
+      return true
+    end
 
-    end_time = Time.now
+    if node[:nodeType].to_i == 1 # ElementNode
+      node_attrs = node[:attributes]
+      for i in 0...node_attrs[:length].to_i
+        attr = node_attrs[i]
+        next if attr.strictly_eql?(JS::Undefined)
 
-    JS.global[:document][:body].appendChild(
-      JS.global[:document].createTextNode("It took #{end_time - start_time} seconds to render")
-    )
+        node.removeAttribute(attr[:name])
+      end
 
-    JS.global[:document][:body].appendChild(rendered)
+      for i in 0...new_node[:attributes][:length].to_i
+        attr = new_node[:attributes].item(i)
+        node.setAttribute(attr[:name], attr[:value])
+      end
+
+      intial_count = new_node[:childNodes][:length]
+
+      idx = 0
+
+      for i in 0...new_node[:childNodes][:length].to_i
+        new_child_node = new_node[:childNodes][idx]
+        idx += 1
+        child_node = node[:childNodes][i]
+
+        if child_node.eql?(JS::Null)
+          node.appendChild(new_child_node)
+          idx -= 1
+        elsif diff_and_update_html_dom(new_child_node, child_node)
+          idx -= 1
+        end
+      end
+
+      node.removeChild(node[:lastChild]) while node[:childNodes][:length].to_i > intial_count.to_i
+    elsif node[:nodeType].to_i == 3 # TextNode
+      unless node[:textContent].strictly_eql?(new_node[:textContent])
+        node[:parentNode].replaceChild(new_node, node)
+        return true
+      end
+    end
+
+    false
   end
 end

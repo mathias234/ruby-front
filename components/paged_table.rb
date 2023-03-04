@@ -56,14 +56,14 @@ class PagedTable < Component
           end
         end
       end
+    end
 
-      button class_name: 'm-1 p-2 bg-red-400', click!: @previous_page_handler do
-        text 'Previous page'
-      end
+    button class_name: 'm-1 p-2 bg-red-400', click!: @previous_page_handler do
+      text 'Previous page'
+    end
 
-      button class_name: 'm-1 p-2 bg-red-400', click!: @next_page_handler do
-        text 'Next page'
-      end
+    button class_name: 'm-1 p-2 bg-red-400', click!: @next_page_handler do
+      text 'Next page'
     end
   end
 end
