@@ -9,10 +9,6 @@ class Page2 < Component
   end
 
   def render
-    h1 class_name: 'text-2xl mt-2' do
-      text 'You are currently viewing Page 2'
-    end
-
     component(PagedTable, headers: %w[Test Test2 Test3], rows: rows)
   end
 end

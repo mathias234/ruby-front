@@ -4,43 +4,35 @@
 class Home < Component
   def data
     {
-      page: 'page2'
+      page: Index,
+      pages: [
+        { name: 'Index', component: Index },
+        { name: 'Page 2', component: Page2 }
+      ]
     }
   end
 
-  def setup
-    @set_page_index = lambda do |_ev|
-      self.page = 'index'
-    end
-
-    @set_page_page2 = lambda do |_ev|
-      self.page = 'page2'
-    end
-  end
-
   def render
-    div do
-      button class_name: 'm-1 p-2 bg-red-400', click!: @set_page_index do
-        text('Go to index')
-      end
+    div class_name: 'container mx-auto' do
+      pages.each do |page|
+        click_lambda = lambda do |_ev|
+          self.page = page[:component]
+        end
 
-      button class_name: 'm-1 p-2 bg-red-400', click!: @set_page_page2 do
-        text('Go to page2')
+        button class_name: 'p-2 my-2 mr-2 shadow-md border-2 border-gray-400 rounded', click!: click_lambda do
+          text page[:name]
+        end
       end
-
-      render_page
     end
+
+    render_page
   end
 
   private
 
   def render_page
-    puts page
-    case page
-    when 'index'
-      component(Index, text_param: 'Hello world')
-    when 'page2'
-      component(Page2)
+    div class_name: 'container mx-auto p-5 shadow-md border-2 border-gray-400 rounded' do
+      component page
     end
   end
 end
