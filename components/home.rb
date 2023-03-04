@@ -4,7 +4,7 @@
 class Home < Component
   def data
     {
-      page: Index,
+      page: Page2,
       pages: [
         { name: 'Index', component: Index },
         { name: 'Page 2', component: Page2 }

@@ -10,7 +10,7 @@ class PagedTable < Component
   end
 
   def data
-    pages = rows.each_slice(2).to_a
+    pages = rows.each_slice(20).to_a
 
     {
       pages: pages,
@@ -38,20 +38,24 @@ class PagedTable < Component
   end
 
   def render
-    table do
-      tr do
-        headers.each do |header|
-          th do
-            text header
+    table class_name: 'w-full' do
+      thead do
+        tr do
+          headers.each do |header|
+            th class_name: 'text-left p-2 border-b-2 border-gray-400' do
+              text header
+            end
           end
         end
       end
 
-      current_rows.each do |row|
-        tr do
-          row.each do |col|
-            td do
-              text col
+      tbody do
+        current_rows.each do |row|
+          tr do
+            row.each do |col|
+              td class_name: 'p-2 border-b-2 border-gray-400' do
+                text col
+              end
             end
           end
         end
