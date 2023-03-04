@@ -2,9 +2,10 @@
 class Element
   attr_accessor :attributes, :children
 
-  def initialize(**attributes)
+  def initialize(component, **attributes)
     @children = attributes[:children] || []
     @attributes = attributes
+    @component = component
   end
 
   def render_to_html(full:)
@@ -12,6 +13,7 @@ class Element
 
     assign_attributes(element)
     register_events(element)
+    bind_model(element)
 
     if full
       children.map do |child_element|
@@ -20,6 +22,18 @@ class Element
     end
 
     element
+  end
+
+  def bind_model(element)
+    return unless attributes[:model]
+
+    unless @component.respond_to?("#{attributes[:model]}=")
+      raise "Unable to bind model #{attributes[:model]} on #{element_name}, could not find data value"
+    end
+
+    element.addEventListener('input') do |event|
+      @component.send("#{attributes[:model]}=", event[:target][:value])
+    end
   end
 
   def assign_attributes(element)
@@ -43,7 +57,7 @@ class Element
 
     unless old_listners.eql?(JS::Undefined)
       for i in 0...old_listners[:length].to_i
-        element.removeEventListener(event_name, element.getEventListeners(event_name)[i][:listener])
+        element.removeEventListener(event_name, element.getEventListeners(event_name)[0][:listener])
       end
     end
 
@@ -61,8 +75,8 @@ end
 class BasicElement < Element
   attr_reader :element_name
 
-  def initialize(element_name, **params)
-    super(**params)
+  def initialize(component, element_name, **params)
+    super(component, **params)
     @element_name = element_name
   end
 end
@@ -71,8 +85,8 @@ end
 class TextElement < Element
   attr_reader :element_name
 
-  def initialize(text, **params)
-    super(**params)
+  def initialize(component, text, **params)
+    super(component, **params)
     @text = text
     @element_name = 'text'
   end
@@ -93,7 +107,7 @@ class ComponentElement < Element
     @component.reset
     @component.render
 
-    super(children: @component.element.children)
+    super(component, children: @component.element.children)
   end
 
   def render_to_html(full:)

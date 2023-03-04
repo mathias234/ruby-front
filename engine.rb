@@ -71,7 +71,7 @@ class Component
   end
 
   def reset
-    @element = BasicElement.new('div')
+    @element = BasicElement.new(self, 'div')
     @element_idx = 0
   end
 
@@ -92,13 +92,13 @@ class Component
   def create_basic_elements
     BASIC_ELEMENTS.each do |element_name|
       define_singleton_method(element_name) do |**attributes, &block|
-        create(BasicElement.new(element_name, **attributes), block: block)
+        create(BasicElement.new(self, element_name, **attributes), block: block)
       end
     end
   end
 
   def text(text, **attributes)
-    create(TextElement.new(text, **attributes))
+    create(TextElement.new(self, text, **attributes))
   end
 
   # @param component [Component]
@@ -144,11 +144,17 @@ class Engine
   end
 
   def render
+    start_time = Time.now
     initialized_component = find_or_initialize_component('root', @start_component_class)
 
     start_component = ComponentElement.new(self, initialized_component, root: true)
+    end_time = Time.now
+    puts "Took #{end_time - start_time} seconds to build virtual dom"
 
+    start_time = Time.now
     diff_and_update_html_dom(start_component, JS.global[:document][:body])
+    end_time = Time.now
+    puts "Took #{end_time - start_time} seconds to diff and update html dom"
   end
 
   def diff_and_update_html_dom(new_node_elem, node)
@@ -162,6 +168,7 @@ class Engine
     if node[:nodeType].to_i == 1 # ElementNode
       # Update event registration
       new_node_elem.register_events(node)
+      new_node_elem.bind_model(node)
 
       # Remove old attributes
       node_attrs = node[:attributes]
