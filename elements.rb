@@ -124,6 +124,8 @@ class ComponentElement < Element
     end
 
     element
+  rescue StandardError => e
+    raise "Error in #{@component.class.name}: #{e}"
   end
 
   def element_name

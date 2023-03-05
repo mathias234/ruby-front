@@ -49,6 +49,10 @@ class Component
     props.each do |prop|
       value = params[prop]
 
+      if respond_to?("#{prop}")
+        raise "Failed to add property #{prop}, make sure you do not create methods with the same name as a property"
+      end
+
       define_singleton_method(prop.to_s) do
         value
       end
@@ -60,6 +64,13 @@ class Component
         @engine.render
       end)
 
+      if respond_to?("#{data_key}=")
+        raise "#{data_key} setter is already defined in class, make sure you do not create methods with the same name as data variables"
+      end
+      if respond_to?("#{data_key}")
+        raise "#{data_key} getter is already defined in class, make sure you do not create methods with the same name as data variables"
+      end
+
       define_singleton_method("#{data_key}=") do |value|
         change_listner.value = value if change_listner.value != value
       end
@@ -68,6 +79,8 @@ class Component
         change_listner.value
       end
     end
+  rescue StandardError => e
+    raise "/#{self.class.name}: #{e}"
   end
 
   def reset
@@ -85,12 +98,16 @@ class Component
 
   def setup; end
 
-  def render(_ctx)
-    raise NotImplementedError
+  def render
+    raise 'Render method not defined, all components should define a render method!'
   end
 
   def create_basic_elements
     BASIC_ELEMENTS.each do |element_name|
+      if respond_to?("#{element_name}")
+        raise "Failed to add html template method #{element_name}, make sure you do not create methods with the same name as a html tag"
+      end
+
       define_singleton_method(element_name) do |**attributes, &block|
         create(BasicElement.new(self, element_name, **attributes), block: block)
       end
@@ -141,6 +158,8 @@ class Engine
     end
 
     @components[dom_id]
+  rescue StandardError => e
+    raise "Error in #{@start_component_class.name}#{e}"
   end
 
   def render
