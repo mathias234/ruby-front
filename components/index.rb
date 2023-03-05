@@ -13,7 +13,7 @@ class Index < Component
     @click_handler = lambda do |_ev|
       puts 'hi'
       self.click_index += 1
-      self.h1_text = "#{self.click_index}"
+      self.h1_text = self.click_index.to_s
     end
   end
 

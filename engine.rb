@@ -165,14 +165,15 @@ class Engine
       return true
     end
 
-    if node[:nodeType].to_i == 1 # ElementNode
+    case node[:nodeType].to_i
+    when 1 # ElementNode
       # Update event registration
       new_node_elem.register_events(node)
       new_node_elem.bind_model(node)
 
       # Remove old attributes
       node_attrs = node[:attributes]
-      for i in 0...node_attrs[:length].to_i
+      (0...node_attrs[:length].to_i).each do |i|
         attr = node_attrs[i]
         next if attr.strictly_eql?(JS::Undefined)
 
@@ -180,13 +181,13 @@ class Engine
       end
 
       # Add new attributes
-      for i in 0...new_node[:attributes][:length].to_i
+      (0...new_node[:attributes][:length].to_i).each do |i|
         attr = new_node[:attributes].item(i)
         node.setAttribute(attr[:name], attr[:value])
       end
 
       # Update children
-      for i in 0...new_node_elem.children.length
+      (0...new_node_elem.children.length).each do |i|
         new_child_node = new_node_elem.children[i]
         child_node = node[:childNodes][i]
 
@@ -199,7 +200,7 @@ class Engine
 
       # Remove excess children
       node.removeChild(node[:lastChild]) while node[:childNodes][:length].to_i > new_node_elem.children.length
-    elsif node[:nodeType].to_i == 3 # TextNode
+    when 3 # TextNode
       unless node[:textContent].strictly_eql?(new_node[:textContent])
         node[:parentNode].replaceChild(new_node, node)
         return true

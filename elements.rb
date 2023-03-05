@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # nodoc:
 class Element
   attr_accessor :attributes, :children
@@ -35,7 +37,7 @@ class Element
       @component.send("#{attributes[:model]}=", event[:target][:value])
     end
 
-    element[:value] = @component.send("#{attributes[:model]}")
+    element[:value] = @component.send(attributes[:model].to_s)
   end
 
   def assign_attributes(element)
@@ -58,7 +60,7 @@ class Element
     old_listners = element.getEventListeners(event_name)
 
     unless old_listners.eql?(JS::Undefined)
-      for i in 0...old_listners[:length].to_i
+      (0...old_listners[:length].to_i).each do |_i|
         element.removeEventListener(event_name, element.getEventListeners(event_name)[0][:listener])
       end
     end
