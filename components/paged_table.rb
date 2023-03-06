@@ -5,21 +5,23 @@ class PagedTable < Component
   def props
     %i[
       headers
-      rows
     ]
   end
 
   def data
-    pages = rows.each_slice(20).to_a
-
     {
-      pages: pages,
+      rows: [],
+      pages: [],
       current_page: 0,
-      current_rows: pages[0]
+      current_rows: []
     }
   end
 
   def setup
+    self.rows = 1_000_000.times.map { |i| [i, i / 2, i / 3, i / 4] }
+    self.pages = rows.each_slice(20).to_a
+    self.current_rows = pages[0]
+
     @next_page_handler = lambda do |_ev|
       self.current_page += 1
 

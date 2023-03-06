@@ -15,5 +15,6 @@ require_remote('components/input_field.rb')
 require_remote('components/page2.rb')
 require_remote('components/paged_table.rb')
 
-engine = Engine.new(Home)
-engine.render
+Engine.new(Home)
+
+puts 'Engine finished..'

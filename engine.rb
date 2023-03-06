@@ -61,7 +61,7 @@ class Component
     data.each do |data_key, data_value|
       change_listner = ChangeListener.new(data_value, lambda do |new_value|
         send("watch_#{data_key}", new_value) if respond_to?("watch_#{data_key}")
-        @engine.render
+        @engine.needs_render = true
       end)
 
       if respond_to?("#{data_key}=")
@@ -144,22 +144,53 @@ end
 
 # nodoc:
 class Engine
+  attr_writer :needs_render
+
   def initialize(start_component)
     @root_element = nil
     @start_component_class = start_component
     @components = {}
+    @queued_setup_tasks = []
+    @needs_render = true
+
+    task_worker = lambda do
+      process_tasks
+      JS.global.setTimeout(task_worker, 10)
+    end
+
+    JS.global.setTimeout(task_worker, 10)
   end
 
   def find_or_initialize_component(dom_id, component_class, **params)
     if @components[dom_id].nil?
       initialized_component = component_class.new(self, dom_id, params)
-      initialized_component.setup
       @components[dom_id] = initialized_component
+
+      @queued_setup_tasks << (
+        lambda do
+          initialized_component.setup
+          self.needs_render = true
+        end
+      )
     end
 
     @components[dom_id]
   rescue StandardError => e
     raise "Error in #{@start_component_class.name}#{e}"
+  end
+
+  def process_tasks
+    task = @queued_setup_tasks.pop
+    if task
+      task.call
+      return
+    end
+
+    return unless @needs_render
+
+    @needs_render = false
+
+    render
   end
 
   def render

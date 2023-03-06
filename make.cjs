@@ -10,6 +10,7 @@ const stdLibBrowser = require('node-stdlib-browser');
 		outfile: 'build.js',
 		minify: false,
 		sourcemap: true,
+    format: "esm",
 		inject: [require.resolve('node-stdlib-browser/helpers/esbuild/shim')],
 		define: {
 			Buffer: 'Buffer'

@@ -84,7 +84,7 @@ export class RubyFront {
 }
 
 
-async function main() {
+const main = async() => {
   const response = await fetch(`https://cdn.jsdelivr.net/npm/ruby-3_2-wasm-wasi@1.0.1/dist/ruby+stdlib.wasm`)
   const buffer = await response.arrayBuffer()
   const module = await WebAssembly.compile(buffer)
@@ -98,4 +98,4 @@ async function main() {
   vm.evalAsync(await script.text())
 }
 
-main()
+await main()
