@@ -45,10 +45,7 @@ class Engine
       initialized_component = component_class.new(self, dom_id, params)
       @components[dom_id] = initialized_component
 
-      JS.global.setTimeout(lambda do
-        initialized_component.setup
-        self.needs_render = true
-      end)
+      initialized_component.setup
 
     end
 

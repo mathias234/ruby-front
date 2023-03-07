@@ -4,7 +4,9 @@ require('js')
 
 def require_remote(file)
   file = JS.global.fetch(file).await
-  eval file.text.await.to_s
+  code = file.text.await.to_s
+
+  eval(code.to_s)
 end
 
 require_remote('src/engine.rb')

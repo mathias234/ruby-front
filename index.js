@@ -2,6 +2,7 @@ import { init, WASI } from "@wasmer/wasi"
 import { WasmFs } from '@wasmer/wasmfs'
 import { RubyVM  } from "ruby-3_2-wasm-wasi"
 
+
 const consolePrinter = () => {
   let memory = undefined;
   let view = undefined;
@@ -51,6 +52,7 @@ const consolePrinter = () => {
   }
 };
 
+
 export class RubyFront {
   async init(rubyModule) {
     await init()
@@ -96,6 +98,27 @@ const main = async() => {
 
   const script = await fetch(`./main.rb`)
   vm.evalAsync(await script.text())
+}
+
+class PromiseFunctions {
+  constructor(ok, fail) {
+    this.okCb = ok
+    this.failCb = fail
+  }
+
+  ok(value) {
+    this.okCb(value)
+  }
+
+  fail(value) {
+    this.failCb(value)
+  }
+}
+
+window.NewPromise = (callback) => {
+  return new Promise((ok, fail) => {
+    callback(new PromiseFunctions(ok, fail))
+  })
 }
 
 await main()

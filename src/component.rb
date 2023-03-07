@@ -171,4 +171,17 @@ class Component
 
     @element = last_element
   end
+
+  def set_timeout(timeout: 0, &block)
+    JS.global.setTimeout(-> { block.call }, timeout)
+  end
+
+  def fetch(url, &block)
+    promise = JS.global.fetch(url)
+    promise.call(:then, lambda do |response|
+      response.text.call(:then, lambda do |text|
+        block.call(text)
+      end)
+    end)
+  end
 end
