@@ -19,6 +19,11 @@ end
 
 # nodoc:
 class Engine
+  ELEMENT_TYPES = [
+    ELEMENT_NODE = 1,
+    TEXT_NODE = 3
+  ].freeze
+
   attr_writer :needs_render
 
   def initialize(start_component)
@@ -91,7 +96,7 @@ class Engine
     end
 
     case node[:nodeType].to_i
-    when 1 # ElementNode
+    when ELEMENT_NODE
       # Update event registration
       new_node_elem.register_events(node)
       new_node_elem.bind_model(node)
@@ -125,11 +130,13 @@ class Engine
 
       # Remove excess children
       node.removeChild(node[:lastChild]) while node[:childNodes][:length].to_i > new_node_elem.children.length
-    when 3 # TextNode
+    when TEXT_NODE
       unless node[:textContent].strictly_eql?(new_node[:textContent])
         node[:parentNode].replaceChild(new_node, node)
         return true
       end
+    else
+      raise "Unexpected node type #{node[:nodeType]} when diffing!"
     end
 
     false
