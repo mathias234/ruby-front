@@ -30,7 +30,6 @@ class Engine
     @root_element = nil
     @start_component_class = start_component
     @components = {}
-    @queued_setup_tasks = []
     @needs_render = true
 
     task_worker = lambda do
@@ -38,7 +37,7 @@ class Engine
       JS.global.setTimeout(task_worker, 10)
     end
 
-    JS.global.setTimeout(task_worker, 10)
+    JS.global.setTimeout(task_worker)
   end
 
   def find_or_initialize_component(dom_id, component_class, **params)
@@ -46,12 +45,11 @@ class Engine
       initialized_component = component_class.new(self, dom_id, params)
       @components[dom_id] = initialized_component
 
-      @queued_setup_tasks << (
-        lambda do
-          initialized_component.setup
-          self.needs_render = true
-        end
-      )
+      JS.global.setTimeout(lambda do
+        initialized_component.setup
+        self.needs_render = true
+      end)
+
     end
 
     @components[dom_id]
@@ -60,12 +58,6 @@ class Engine
   end
 
   def process_tasks
-    task = @queued_setup_tasks.pop
-    if task
-      task.call
-      return
-    end
-
     return unless @needs_render
 
     @needs_render = false

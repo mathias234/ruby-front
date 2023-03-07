@@ -5,12 +5,12 @@ class PagedTable < Component
   def props
     %i[
       headers
+      rows
     ]
   end
 
   def data
     {
-      rows: [],
       pages: [],
       current_page: 0,
       current_rows: []
@@ -18,9 +18,7 @@ class PagedTable < Component
   end
 
   def setup
-    self.rows = 1_000_000.times.map { |i| [i, i / 2, i / 3, i / 4] }
-    self.pages = rows.each_slice(20).to_a
-    self.current_rows = pages[0]
+    recompute_pages
 
     @next_page_handler = lambda do |_ev|
       self.current_page += 1
@@ -39,8 +37,13 @@ class PagedTable < Component
     end
   end
 
-  def watch_pages(_new_pages)
-    emit input!: 'Yeet!!'
+  def watch_rows(_new_rows)
+    recompute_pages
+  end
+
+  def recompute_pages
+    self.pages = rows.each_slice(20).to_a
+    self.current_rows = pages[0]
   end
 
   def render

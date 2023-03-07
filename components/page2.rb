@@ -4,16 +4,15 @@
 class Page2 < Component
   def data
     {
-      rows: [[]],
-      some_model: ''
+      rows: [[]]
     }
   end
 
-  def watch_some_model(changed)
-    puts "Some model changed into #{changed}"
+  def setup
+    self.rows = 1_000_000.times.map { |i| [i, i / 2, i / 3, i / 4] }
   end
 
   def render
-    component(PagedTable, model: :some_model, headers: %w[Test Test2 Test3 Test4])
+    component(PagedTable, headers: %w[Test Test2 Test3 Test4], rows: rows)
   end
 end

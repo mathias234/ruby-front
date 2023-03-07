@@ -26,6 +26,8 @@ class Component
     @engine = engine
     @parent_dom_id = parent_dom_id
     @attributes = attributes
+    @components_using_data = {}
+    @data_keys = []
     reset
 
     create_basic_elements
@@ -85,6 +87,10 @@ class Component
 
     initialized_component = engine.find_or_initialize_component(dom_id, component_class, **params)
 
+    params.each do |param_key, _param_value|
+      @components_using_data[param_key] = initialized_component if @data_keys.include?(param_key.to_sym)
+    end
+
     create(ComponentElement.new(engine, initialized_component))
   end
 
@@ -116,8 +122,20 @@ class Component
 
   def setup_data
     data.each do |data_key, data_value|
+      @data_keys << data_key
       change_listner = ChangeListener.new(data_value, lambda do |new_value|
         send("watch_#{data_key}", new_value) if respond_to?("watch_#{data_key}")
+
+        # Send changed value to child component watchers, only if they use this value though.
+        if @components_using_data.key?(data_key) && @components_using_data[data_key].respond_to?("watch_#{data_key}")
+          # We also need to redefine the property method
+          @components_using_data[data_key].define_singleton_method(data_key.to_s) do
+            new_value
+          end
+
+          @components_using_data[data_key].send("watch_#{data_key}", new_value)
+        end
+
         @engine.needs_render = true
       end)
 
