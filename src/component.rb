@@ -127,13 +127,15 @@ class Component
         send("watch_#{data_key}", new_value) if respond_to?("watch_#{data_key}")
 
         # Send changed value to child component watchers, only if they use this value though.
-        if @components_using_data.key?(data_key) && @components_using_data[data_key].respond_to?("watch_#{data_key}")
+        if @components_using_data.key?(data_key)
           # We also need to redefine the property method
           @components_using_data[data_key].define_singleton_method(data_key.to_s) do
             new_value
           end
 
-          @components_using_data[data_key].send("watch_#{data_key}", new_value)
+          if @components_using_data[data_key].respond_to?("watch_#{data_key}")
+            @components_using_data[data_key].send("watch_#{data_key}", new_value)
+          end
         end
 
         @engine.needs_render = true
