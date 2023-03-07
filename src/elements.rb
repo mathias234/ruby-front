@@ -95,7 +95,7 @@ class TextElement < Element
     @element_name = 'text'
   end
 
-  def render_to_html(full:)
+  def render_to_html(*)
     JS.global[:document].createTextNode(@text)
   end
 end

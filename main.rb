@@ -7,8 +7,9 @@ def require_remote(file)
   eval file.text.await.to_s
 end
 
-require_remote('engine.rb')
-require_remote('elements.rb')
+require_remote('src/engine.rb')
+require_remote('src/component.rb')
+require_remote('src/elements.rb')
 require_remote('components/home.rb')
 require_remote('components/index.rb')
 require_remote('components/input_field.rb')
