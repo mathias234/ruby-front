@@ -50,6 +50,21 @@ class Component
 
   def setup; end
 
+  private
+
+  def emit(**events)
+    events.each do |event_key, event_value|
+      @attributes.each do |attr_key, attr_value|
+        if event_key == attr_key
+          attr_value.call(event_value)
+          return
+        end
+      end
+    end
+
+    raise "Unable to find receiver for event #{event_name}"
+  end
+
   def render
     raise 'Render method not defined, all components should define a render method!'
   end
@@ -62,12 +77,16 @@ class Component
   def component(component_class, **params)
     dom_id = @parent_dom_id + ".ComponentElement[#{component_class.name}][#{@element_idx}]"
 
+    if params[:model]
+      params[:input!] = lambda do |changed|
+        send("#{params[:model]}=", changed)
+      end
+    end
+
     initialized_component = engine.find_or_initialize_component(dom_id, component_class, **params)
 
     create(ComponentElement.new(engine, initialized_component))
   end
-
-  private
 
   def create_basic_elements
     BASIC_ELEMENTS.each do |element_name|

@@ -39,6 +39,10 @@ class PagedTable < Component
     end
   end
 
+  def watch_pages(_new_pages)
+    emit input!: 'Yeet!!'
+  end
+
   def render
     table class_name: 'w-full' do
       thead do
