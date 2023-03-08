@@ -1,6 +1,9 @@
 # How to run
 This project uses vite, so just do:
-npm run dev
+`npm run dev`
+
+And then run the tailwind cli watcher
+`npx tailwindcss -i ./input.css -o ./dist/output.css --watch`
 
 # Example component
 
