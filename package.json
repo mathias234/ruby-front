@@ -9,6 +9,7 @@
     "@wasmer/wasm-transformer": "^0.12.0",
     "@wasmer/wasmfs": "^0.12.0",
     "esbuild": "0.17.11",
+    "geteventlisteners": "^1.1.0",
     "node-stdlib-browser": "^1.2.0",
     "ruby-3_2-wasm-wasi": "^1.0.1"
   },
@@ -24,5 +25,8 @@
   "bugs": {
     "url": "https://github.com/mathias234/RubyYeet/issues"
   },
-  "homepage": "https://github.com/mathias234/RubyYeet#readme"
+  "homepage": "https://github.com/mathias234/RubyYeet#readme",
+  "devDependencies": {
+    "tailwindcss": "^3.2.7"
+  }
 }

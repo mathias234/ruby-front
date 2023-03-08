@@ -1,7 +1,7 @@
 import { init, WASI } from "@wasmer/wasi"
 import { WasmFs } from '@wasmer/wasmfs'
 import { RubyVM  } from "ruby-3_2-wasm-wasi"
-
+require("geteventlisteners")
 
 const consolePrinter = () => {
   let memory = undefined;

@@ -7,7 +7,7 @@ const stdLibBrowser = require('node-stdlib-browser');
   await esbuild.build({
     entryPoints: ['index.js'],
     bundle: true,
-    outfile: 'build.js',
+    outfile: './dist/build.js',
     minify: false,
     sourcemap: true,
     format: "esm",
