@@ -1,7 +1,9 @@
+import './dist/output.css'
+
 import { init, WASI } from "@wasmer/wasi"
 import { WasmFs } from '@wasmer/wasmfs'
 import { RubyVM  } from "ruby-3_2-wasm-wasi"
-require("geteventlisteners")
+import {} from "geteventlisteners"
 
 const consolePrinter = () => {
   let memory = undefined;
@@ -96,7 +98,7 @@ const main = async() => {
 
   globalThis.rubyVM = vm
 
-  const script = await fetch(`./main.rb`)
+  const script = await fetch(`./src/main.rb`)
   vm.evalAsync(await script.text())
 }
 

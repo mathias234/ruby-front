@@ -1,32 +1,23 @@
 {
-  "name": "ruby-front",
-  "version": "1.0.0",
-  "description": "Start a simple webserver e.g `ruby -run -ehttpd . -p8000`, then open the browser and go to the server",
-  "main": "index.js",
+  "name": "ruby-yeet",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.2.7",
+    "vite": "^4.1.0",
+    "vite-plugin-node-polyfills": "^0.7.0"
+  },
   "dependencies": {
-    "@esbuild-plugins/node-modules-polyfill": "^0.2.2",
     "@wasmer/wasi": "^1.2.2",
     "@wasmer/wasm-transformer": "^0.12.0",
     "@wasmer/wasmfs": "^0.12.0",
-    "esbuild": "0.17.11",
     "geteventlisteners": "^1.1.0",
-    "node-stdlib-browser": "^1.2.0",
     "ruby-3_2-wasm-wasi": "^1.0.1"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/mathias234/RubyYeet.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/mathias234/RubyYeet/issues"
-  },
-  "homepage": "https://github.com/mathias234/RubyYeet#readme",
-  "devDependencies": {
-    "tailwindcss": "^3.2.7"
   }
 }

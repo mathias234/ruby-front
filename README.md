@@ -1,7 +1,6 @@
 # How to run
-Compile JS with esbuild
-node `node make.cjs`
-Start a simple webserver e.g `ruby -run -ehttpd . -p8000`, then open the browser and go to the server
+This project uses vite, so just do:
+npm run dev
 
 # Example component
 
