@@ -11,6 +11,7 @@
   "devDependencies": {
     "tailwindcss": "^3.2.7",
     "vite": "^4.1.0",
+    "vite-plugin-full-reload": "^1.0.5",
     "vite-plugin-node-polyfills": "^0.7.0"
   },
   "dependencies": {

@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
-
+import FullReload from 'vite-plugin-full-reload'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -9,5 +9,6 @@ export default defineConfig({
       // Whether to polyfill `node:` protocol imports.
       protocolImports: true,
     }),
+    FullReload(['./**/*.rb'])
   ],
 })
