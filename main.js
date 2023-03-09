@@ -89,7 +89,7 @@ export class RubyFront {
 
 
 const main = async() => {
-  const response = await fetch(`https://cdn.jsdelivr.net/npm/ruby-3_2-wasm-wasi@1.0.1/dist/ruby+stdlib.wasm`)
+  const response = await fetch(`ruby+stdlib.wasm`)
   const buffer = await response.arrayBuffer()
   const module = await WebAssembly.compile(buffer)
   const { vm } = await new RubyFront().init(module)

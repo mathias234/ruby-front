@@ -2,11 +2,11 @@
 
 require('js')
 
-def require_remote(file)
-  file = JS.global.fetch(file).await
+def require_remote(file_path)
+  file = JS.global.fetch(file_path).await
   code = file.text.await.to_s
 
-  eval(code.to_s)
+  Kernel.eval(code, TOPLEVEL_BINDING, file_path)
 end
 
 require_remote('src/engine.rb')
