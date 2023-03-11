@@ -57,6 +57,13 @@ class Element
 
     event_handler = attributes["#{event_name}!".to_sym]
 
+    if event_handler.is_a?(Symbol)
+      event_handler_name = event_handler
+      event_handler = lambda do |event|
+        @component.send(event_handler_name, event)
+      end
+    end
+
     old_listners = element.getEventListeners(event_name)
 
     unless old_listners.eql?(JS::Undefined)

@@ -19,22 +19,6 @@ class PagedTable < Component
 
   def setup
     recompute_pages
-
-    @next_page_handler = lambda do |_ev|
-      self.current_page += 1
-
-      self.current_page = pages.length - 1 if self.current_page >= pages.length
-
-      self.current_rows = pages[self.current_page]
-    end
-
-    @previous_page_handler = lambda do |_ev|
-      self.current_page -= 1
-
-      self.current_page = 0 if self.current_page.negative?
-
-      self.current_rows = pages[self.current_page]
-    end
   end
 
   def watch_rows(_new_rows)
@@ -44,6 +28,22 @@ class PagedTable < Component
   def recompute_pages
     self.pages = rows.each_slice(20).to_a
     self.current_rows = pages[0]
+  end
+
+  def next_page_handler(_event)
+    self.current_page += 1
+
+    self.current_page = pages.length - 1 if self.current_page >= pages.length
+
+    self.current_rows = pages[self.current_page]
+  end
+
+  def previous_page_handler(_event)
+    self.current_page -= 1
+
+    self.current_page = 0 if self.current_page.negative?
+
+    self.current_rows = pages[self.current_page]
   end
 
   def render
@@ -71,11 +71,11 @@ class PagedTable < Component
       end
     end
 
-    button class_name: 'm-1 p-2 bg-red-400', click!: @previous_page_handler do
+    button class_name: 'm-1 p-2 bg-red-400', click!: :previous_page_handler do
       text 'Previous page'
     end
 
-    button class_name: 'm-1 p-2 bg-red-400', click!: @next_page_handler do
+    button class_name: 'm-1 p-2 bg-red-400', click!: :next_page_handler do
       text 'Next page'
     end
   end
