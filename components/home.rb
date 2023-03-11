@@ -4,7 +4,7 @@
 class Home < Component
   def data
     {
-      page: Page2,
+      page: Index,
       pages: [
         { name: 'Index', component: Index },
         { name: 'Page 2', component: Page2 }
@@ -12,11 +12,24 @@ class Home < Component
     }
   end
 
+  def setup
+    page_param = search_params.get('page')
+    return unless page_param != JS::Null
+
+    page_param = page_param.to_s
+
+    page = pages.find { |page| page[:name] == page_param }
+    return unless page
+
+    self.page = page[:component]
+  end
+
   def render
     div class_name: 'container mx-auto' do
       pages.each do |page|
         click_lambda = lambda do |_ev|
           self.page = page[:component]
+          set_search_param('page', page[:name])
         end
 
         button class_name: 'p-2 my-2 mr-2 shadow-md border-2 border-gray-400 rounded', click!: click_lambda do

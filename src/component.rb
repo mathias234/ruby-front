@@ -184,4 +184,12 @@ class Component
       end)
     end)
   end
+
+  def search_params
+    JS.eval('return new URLSearchParams(window.location.search)')
+  end
+
+  def set_search_param(param, value)
+    JS.eval("url = new URL(window.location); url.searchParams.set('#{param}', '#{value}'); window.history.pushState('', '', url);")
+  end
 end
