@@ -17,6 +17,7 @@ require_remote('components/index.rb')
 require_remote('components/input_field.rb')
 require_remote('components/page2.rb')
 require_remote('components/paged_table.rb')
+require_remote('components/star_wars_characters.rb')
 
 Engine.new(Home)
 

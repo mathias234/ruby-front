@@ -7,7 +7,8 @@ class Home < Component
       page: Index,
       pages: [
         { name: 'Index', component: Index },
-        { name: 'Page 2', component: Page2 }
+        { name: 'Page 2', component: Page2 },
+        { name: 'Star Wars characters', component: StarWarsCharacters }
       ]
     }
   end

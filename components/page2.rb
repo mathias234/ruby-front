@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'json'
+
 # nodoc:
 class Page2 < Component
   def data
@@ -12,6 +14,12 @@ class Page2 < Component
   def setup
     fetch('test.txt') do |text|
       puts "Yeet #{text}"
+    end
+
+    fetch('https://swapi.dev/api/people/1/') do |json|
+      JSON.parse("#{json}").each do |key, value|
+        puts "#{key}: #{value}"
+      end
     end
 
     set_timeout(timeout: 0) do
