@@ -2,7 +2,7 @@ import './dist/output.css'
 
 import { init, WASI } from "@wasmer/wasi"
 import { WasmFs } from '@wasmer/wasmfs'
-import { RubyVM  } from "ruby-3_2-wasm-wasi"
+import { RubyVM  } from "ruby-head-wasm-wasi"
 import {} from "geteventlisteners"
 
 const consolePrinter = () => {
